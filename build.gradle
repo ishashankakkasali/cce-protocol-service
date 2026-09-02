@@ -1,0 +1,126 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.4.2'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'jacoco'
+    id 'org.sonarqube' version '6.3.1.5724'
+}
+
+group = 'org.openphc.cce'
+version = '2.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    hapiVersion = '7.6.0'
+}
+
+dependencies {
+    // Shared vocabulary and FHIR parsing/validation.
+    implementation 'org.openphc.cce:cce-common-util'
+
+    // Spring Boot starters. No spring-kafka: this service neither publishes nor consumes events —
+    // the matcher and compliance services pick up definition changes by polling the tables.
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // No JSONLogic/jakarta.json declarations: this service evaluates no expressions itself. Both
+    // arrive transitively from cce-common-util, which owns ExpressionEvaluationService and its version.
+
+    // Database
+    runtimeOnly 'org.postgresql:postgresql'
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+
+    // FHIR
+    implementation "ca.uhn.hapi.fhir:hapi-fhir-base:${hapiVersion}"
+    implementation "ca.uhn.hapi.fhir:hapi-fhir-structures-r4:${hapiVersion}"
+    // Neither of the next two is referenced from source, but both are required at runtime — do not
+    // remove as "unused". FhirContext needs a hapi-fhir-caching-* module for its internal caches,
+    // and HAPI's FHIRPath engine loads org.fhir.ucum classes eagerly (NoClassDefFoundError without).
+    implementation "ca.uhn.hapi.fhir:hapi-fhir-caching-caffeine:${hapiVersion}"
+    implementation 'org.fhir:ucum:1.0.8'
+
+    // Expression evaluation
+
+    // Observability
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'com.h2database:h2'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+// Held just under the measured level so an uncovered addition fails the build rather than quietly
+// eroding the floor.
+jacocoTestCoverageVerification {
+    dependsOn jacocoTestReport
+    violationRules {
+        rule {
+            // The application class is a bootstrap shim with nothing to assert; covering it would only
+            // mean starting a full context for the sake of the counter.
+            excludes = ['org.openphc.cce.protocol.ProtocolServiceApplication']
+            limit {
+                counter = 'INSTRUCTION'
+                value = 'COVEREDRATIO'
+                minimum = 0.98
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('jacocoTestCoverageVerification')
+}
+
+sonar {
+    properties {
+        property 'sonar.organization', 'openphc'
+        property 'sonar.projectKey', 'openphc_cce-protocol-service'
+        // The report jacocoTestReport already emits. Sonar reads coverage from this file rather
+        // than measuring anything itself, so the two can only agree.
+        property 'sonar.coverage.jacoco.xmlReportPaths',
+                 "${layout.buildDirectory.get()}/reports/jacoco/test/jacocoTestReport.xml"
+    }
+}
+
+// Without this, `gradlew sonar` on a clean checkout uploads with no coverage at all — the task does
+// not build the report it reads.
+tasks.named('sonar') {
+    dependsOn jacocoTestReport
+}

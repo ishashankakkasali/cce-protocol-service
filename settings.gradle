@@ -1,0 +1,4 @@
+rootProject.name = 'cce-protocol-service'
+
+// Shared vocabulary and FHIR parsing/validation. Composite build — the repos sit side by side.
+includeBuild '../cce-common-util'
