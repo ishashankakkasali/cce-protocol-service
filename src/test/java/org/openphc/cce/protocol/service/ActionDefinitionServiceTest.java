@@ -260,7 +260,7 @@ class ActionDefinitionServiceTest {
 
         @Test
         void deletesWithoutConsultingAnotherServicesTables() {
-            // intelligence_event_log belongs to the Compliance Service and is self-contained — each
+            // intelligence_event_log belongs to the Step SLA Service and is self-contained — each
             // row snapshots the published event — so a definition that past evaluations referenced is
             // still deletable here, with no cross-service read.
             UUID id = UUID.randomUUID();

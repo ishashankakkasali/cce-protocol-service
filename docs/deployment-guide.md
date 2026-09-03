@@ -1,7 +1,7 @@
 # Deployment Guide — Protocol Service
 
 Deploy **first**. The Matcher Service's migration declares foreign keys into `protocol_definition`,
-and the Compliance Service validates its mapping against tables this service creates. Full ordering
+and the Step SLA Service validates its mapping against tables this service creates. Full ordering
 rationale: [Architecture Overview §6](../../cce-common-util/docs/architecture-overview.md#6-deployment-order).
 
 ## Requirements
