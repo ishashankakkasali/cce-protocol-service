@@ -109,6 +109,11 @@ Flyway applies `V1__initial_schema.sql` on startup, creating `protocol_definitio
 `action_definition` and `trigger_index` — the three tables this service owns. History is
 tracked in `flyway_schema_history_protocol`.
 
+One comment in `V1` says `action_definition` is resolved by canonical at runtime by the Compliance
+Service. Two services do that resolution now — the Matcher Service and the Step SLA Service — but the
+migration is not edited to say so: it is applied, and editing it would change its checksum and fail
+the validation described under [Troubleshooting](#troubleshooting).
+
 ```sql
 -- confirm what was applied
 SELECT version, description, success, installed_on
