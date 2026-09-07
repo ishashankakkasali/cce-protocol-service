@@ -123,7 +123,7 @@ public class ActionDefinitionService {
      * Delete an ActionDefinition.
      *
      * <p>Not blocked by intelligence events that referenced it. {@code intelligence_event_log} is written
-     * by the Matcher and Compliance services and is deliberately self-contained — each row snapshots the
+     * by the Matcher and Step SLA services and is deliberately self-contained — each row snapshots the
      * full published event — so its history stays readable once the definition is gone, and this service
      * does not consult it to answer a delete.
      *

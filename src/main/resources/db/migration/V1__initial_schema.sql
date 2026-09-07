@@ -5,7 +5,7 @@
 -- Database: PostgreSQL 16
 --
 -- The definitional plane. This service is the sole writer of every table below; the Matcher and
--- Compliance services read protocol_definition, action_definition and trigger_index directly and
+-- Step SLA services read protocol_definition, action_definition and trigger_index directly and
 -- never write to them.
 --
 -- Shares the `ccedb` database with the other CCE services and keeps its own Flyway ledger
@@ -43,7 +43,7 @@ ALTER TABLE protocol_definition REPLICA IDENTITY FULL;
 -- 2. action_definition
 -- =============================================
 -- FHIR ActivityDefinition resources referenced by intelligence actions via definitionCanonical.
--- Written here; resolved by canonical at runtime by the Compliance Service.
+-- Written here; resolved by canonical at runtime by the Matcher and Step SLA services.
 -- =============================================
 CREATE TABLE action_definition (
     id                  UUID            NOT NULL DEFAULT gen_random_uuid(),
