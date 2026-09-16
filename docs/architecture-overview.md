@@ -45,7 +45,8 @@ flowchart TD
     B --> C["validateActionIds<br/>unique across the whole document"]
     C --> D["validateActionTypes<br/>every action declares step or fire-event"]
     D --> E["validateTriggers<br/>reject a trigger with neither data[] nor condition,<br/>or a codeFilter.path no event is read for"]
-    E --> F["warn on inert relatedActions<br/>concurrent-* and dangling edges"]
+    E --> E2["validateOptionalStepDeadlines<br/>no tolerance-days on a non-must action"]
+    E2 --> F["warn on inert relatedActions<br/>concurrent-* and dangling edges"]
     F --> G{"(url, version)<br/>already loaded?"}
     G -->|yes| H["409-worthy: IllegalArgumentException → 400"]
     G -->|no| I["persist protocol_definition<br/>status = ACTIVE"]
@@ -64,6 +65,7 @@ never leaves a partial row behind.
 | Trigger with neither `data[]` nor condition | reject | Matches nothing — it would be stored as an action that can never fire |
 | Unknown FHIR resource type in a trigger | reject | Would create an index row no inbound event could match |
 | `codeFilter.path` outside [`TriggerPath`](../../cce-common-util/docs/data-dictionary.md#9-trigger_index) | reject | Same failure, one level down: the row is indexed and never matched, and since **every** codeFilter of an action must match, one such path disables the action rather than narrowing it. A protocol that loads cleanly and silently never enrols anyone is worse than one that is refused |
+| `tolerance-days` on an action that is not `requiredBehavior: "must"` | reject | A deadline is the point at which *required* work has not been recorded, so only a mandatory step can breach one. Matcher schedules no SLA transition for an optional step, so the extension would enforce nothing while the author believes it does. Fixed by declaring `"must"` or dropping the extension. An absent `requiredBehavior` is not mandatory |
 | `concurrent-*` relatedAction | **warn** | Establishes no ordering; previously accepted, so rejecting would break an upstream publisher |
 | `relatedAction` naming an unknown action | **warn** | Same |
 | Body that the FHIR parser accepts but Jackson cannot re-read | reject | Nothing storable — fails rather than persisting an empty definition body |

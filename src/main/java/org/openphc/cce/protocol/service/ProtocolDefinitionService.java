@@ -61,6 +61,10 @@ public class ProtocolDefinitionService {
         planDefinitionParser.validateActionIds(planDefinition);
         planDefinitionParser.validateActionTypes(planDefinition);
         planDefinitionParser.validateTriggers(planDefinition);
+        // Only a mandatory step can be late, so only a mandatory step may carry a deadline. Rejected
+        // here rather than ignored downstream: an author who writes tolerance-days on an optional
+        // action believes a deadline is being enforced, and nothing later would tell them otherwise.
+        planDefinitionParser.validateOptionalStepDeadlines(planDefinition);
         warnOnInertRelatedActions(planDefinition);
 
         String url = planDefinition.getUrl();

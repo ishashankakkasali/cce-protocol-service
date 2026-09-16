@@ -93,6 +93,24 @@ class ProtocolDefinitionServiceTest {
         verify(protocolDefinitionRepository, never()).save(any());
     }
 
+    @Test
+    void loadProtocol_optionalActionWithADeadline_throwsIllegalArgument() {
+        // Only a mandatory step can be late, so a deadline on an optional action enforces nothing.
+        // Refused at load: nothing downstream would ever tell the author their SLA is inert.
+        PlanDefinition planDef = mockPlanDefinitionMinimal("http://openphc.org/test", "1.0.0");
+        when(planDefinitionParser.parse(planDefinitionJson)).thenReturn(planDef);
+        doThrow(new IllegalArgumentException("Optional actions must not declare a deadline: "
+                + "action 'referral' (requiredBehavior=could, tolerance-days=3)"))
+                .when(planDefinitionParser).validateOptionalStepDeadlines(planDef);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> service.loadProtocol(planDefinitionJson));
+        assertTrue(ex.getMessage().contains("referral"));
+
+        verify(protocolDefinitionRepository, never()).save(any());
+        verify(triggerIndexRepository, never()).saveAll(anyList());
+    }
+
     // ── Retire Protocol Tests ──
 
     @Test
@@ -257,6 +275,7 @@ class ProtocolDefinitionServiceTest {
         verify(planDefinitionParser).validateActionIds(planDef);
         verify(planDefinitionParser).validateActionTypes(planDef);
         verify(planDefinitionParser).validateTriggers(planDef);
+        verify(planDefinitionParser).validateOptionalStepDeadlines(planDef);
     }
 
     @Test
