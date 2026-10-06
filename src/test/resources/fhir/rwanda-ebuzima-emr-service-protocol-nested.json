@@ -3,7 +3,7 @@
   "url": "http://openphc.org/PlanDefinition/emr-service-protocol",
   "date": "2026-06-22",
   "name": "EmrServiceProtocol",
-  "title": "Facility service journey",
+  "title": "EMR Service Screening & Management Protocol",
   "action": [
     {
       "id": "visit-encounter",
