@@ -1,9 +1,13 @@
 {
+  "resourceType": "PlanDefinition",
   "id": "emr-service-protocol",
   "url": "http://openphc.org/PlanDefinition/emr-service-protocol",
   "date": "2026-06-22",
   "name": "EmrServiceProtocol",
   "title": "EMR Service Diabetes Screening & Management Protocol",
+  "status": "active",
+  "version": "1.0.0",
+  "description": "Tracks an outpatient visit workflow from the Ebuzima HIE: nursing-station check-in (VISIT_ENCOUNTER), vitals recording, then a clinical consultation (CONSULTATION_ENCOUNTER) whose sub-steps cover chief complaints, history, laboratory ordering and results, diagnosis, treatment prescription, and referral. Designed to match CloudEvents from the OpenHIM mediator carrying FHIR R4 resources.",
   "action": [
     {
       "id": "visit-encounter",
@@ -371,9 +375,5 @@
         }
       ]
     }
-  ],
-  "status": "active",
-  "version": "1.0.0",
-  "description": "Tracks an outpatient visit workflow from the Ebuzima HIE: nursing-station check-in (VISIT_ENCOUNTER), vitals recording, then a clinical consultation (CONSULTATION_ENCOUNTER) whose sub-steps cover chief complaints, history, laboratory ordering and results, diagnosis, treatment prescription, and referral. Designed to match CloudEvents from the OpenHIM mediator carrying FHIR R4 resources.",
-  "resourceType": "PlanDefinition"
+  ]
 }
